@@ -363,12 +363,14 @@ export default  defineComponent({
       if (y < 0) {
         return;
       }
-      if (x > this.width) {
+      if (x >= this.width) {
         return;
       }
-      if (y > this.height) {
+      if (y >= this.height) {
         return;
       }
+
+      console.log(x)
 
       const start = (y * this.width + x) * 4;
       if (this.tool === "eraser") {
