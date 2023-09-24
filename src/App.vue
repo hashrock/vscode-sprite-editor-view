@@ -115,9 +115,9 @@ async function getImageData() {
   }
   outCtx.drawImage(canvas, 0, 0);
 
-  const blob = await new Promise(resolve => {
+  const blob = await new Promise<Blob>((resolve : any) => {
     outCanvas.toBlob(resolve, "image/png");
-  }) 
+  }) as Blob;
 
   return new Uint8Array(await blob.arrayBuffer());
 }
