@@ -1,3 +1,4 @@
+// @ts-nocheck
 //https://github.com/binarymax/floodfill.js/blob/master/floodfill.js
 
 export var floodfill = (function () {

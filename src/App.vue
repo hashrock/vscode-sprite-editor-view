@@ -48,9 +48,11 @@
   </div>
 </template>
 
-<script>
-let vscode = null;
-function postMessage(message) {
+<script lang="ts">
+declare function acquireVsCodeApi(): any;
+
+let vscode: any = null;
+function postMessage(message: any) {
   if (vscode) {
     vscode.postMessage(message);
   }
@@ -62,9 +64,9 @@ try{
 }
 
 
-let canvas;
-let ctx;
-let imageData;
+let canvas : HTMLCanvasElement;
+let ctx: CanvasRenderingContext2D;
+let imageData : ImageData;
 import * as FloodFill from "./flood";
 import * as color from "./color";
 
@@ -86,7 +88,7 @@ const colors = [
   "#31a2f2",
   "#b2dcef"
 ];
-async function loadImageFromData(initialContent) {
+async function loadImageFromData(initialContent: BlobPart) {
   const blob = new Blob([initialContent], { type: "image/png" });
   const url = URL.createObjectURL(blob);
   try {
@@ -108,24 +110,33 @@ async function getImageData() {
   outCanvas.height = canvas.height;
 
   const outCtx = outCanvas.getContext("2d");
+  if (!outCtx) {
+    throw new Error("no context");
+  }
   outCtx.drawImage(canvas, 0, 0);
 
   const blob = await new Promise(resolve => {
     outCanvas.toBlob(resolve, "image/png");
-  });
+  }) 
 
   return new Uint8Array(await blob.arrayBuffer());
 }
 
-function round(p) {
+function round(p: number) {
   return Math.floor(p);
 }
+import { defineComponent } from 'vue'
 
-export default {
+interface Point {
+  x: number;
+  y: number;
+}
+
+export default  defineComponent({
   data() {
     return {
       drag: false,
-      old: null,
+      old: null as Point | null,
       color: "black",
       lineWidth: 1,
       scale: 16,
@@ -134,7 +145,8 @@ export default {
       height: 200,
       colors: colors,
       strokeWidth: 1,
-      tool: "pen"
+      tool: "pen",
+      ready: false
     };
   },
   computed: {
@@ -145,8 +157,11 @@ export default {
     }
   },
   mounted() {
-    canvas = this.$refs.canvas;
-    ctx = canvas.getContext("2d");
+    canvas = this.$refs.canvas as HTMLCanvasElement;
+    if (!canvas) {
+      throw new Error("canvas not found");
+    }
+    ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
     ctx.imageSmoothingEnabled = false;
     window.addEventListener("message", async e => {
       const { type, body, requestId } = e.data;
@@ -174,14 +189,14 @@ export default {
           }
         }
         case "update": {
-          let data = body.content
-            ? new Uint8Array(body.content.data)
-            : undefined;
-          //get last snapshot
-          if (body.edits.length > 0) {
-            data = body.edits[body.edits.length - 1].snapshot.data;
-          }
-          await this.reset(new Uint8Array(data));
+          // let data = body.content
+          //   ? new Uint8Array(body.content.data)
+          //   : undefined;
+          // //get last snapshot
+          // if (body.edits.length > 0) {
+          //   data = body.edits[body.edits.length - 1].snapshot.data;
+          // }
+          // await this.reset(new Uint8Array(data));
           return;
         }
         case "getFileData": {
@@ -208,9 +223,9 @@ export default {
 
   },
   methods: {
-    setupCanvasBg(width, height) {
-      const canvas = this.$refs.canvasBg;
-      const ctx = canvas.getContext("2d");
+    setupCanvasBg(width: number, height: number) {
+      const canvas = this.$refs.canvasBg as HTMLCanvasElement;      
+      const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
       canvas.width = width;
       canvas.height = height;
 
@@ -230,7 +245,7 @@ export default {
       }
       ctx.putImageData(imageData, 0, 0);
     },
-    async reset(data) {
+    async reset(data: Uint8Array) {
       if (data) {
         const img = await loadImageFromData(data);
         canvas.width = img.naturalWidth;
@@ -247,7 +262,7 @@ export default {
         this.redraw();
       }
     },
-    down(ev) {
+    down(ev: { button: number; offsetX: any; offsetY: any; pointerId: number; }) {
       if (ev.button === 0) {
         if (this.tool === "fill") {
           this.startFlood(round(ev.offsetX), round(ev.offsetY));
@@ -265,9 +280,9 @@ export default {
         const pixel = this.getPixel(round(ev.offsetX), round(ev.offsetY));
         this.selectedColor =
           "#" +
-          parseInt(pixel[0]).toString(16) +
-          parseInt(pixel[1]).toString(16) +
-          parseInt(pixel[2]).toString(16);
+          Math.floor(pixel[0]).toString(16) +
+          Math.floor(pixel[1]).toString(16) +
+          Math.floor(pixel[2]).toString(16);
         if (pixel[3] === 0) {
           this.tool = "eraser";
         } else {
@@ -275,7 +290,7 @@ export default {
         }
       }
     },
-    async up(ev) {
+    async up(_: any) {
       if (this.drag) {
         this.drag = false;
 
@@ -285,8 +300,8 @@ export default {
         });
       }
     },
-    move(ev) {
-      if (this.drag) {
+    move(ev: { offsetX: any; offsetY: any; }) {
+      if (this.drag && this.old) {
         this.line(this.old.x, this.old.y, round(ev.offsetX), round(ev.offsetY));
         this.old = {
           x: round(ev.offsetX),
@@ -298,7 +313,7 @@ export default {
     redraw() {
       ctx.putImageData(imageData, 0, 0);
     },
-    line(x0, y0, x1, y1) {
+    line(x0: number, y0: number, x1: number, y1: number) {
       const dx = Math.abs(x1 - x0);
       const dy = Math.abs(y1 - y0);
       const sx = x0 < x1 ? 1 : -1;
@@ -341,7 +356,7 @@ export default {
         }
       }
     },
-    setPixel(x, y) {
+    setPixel(x: number, y: number) {
       if (x < 0) {
         return;
       }
@@ -374,7 +389,7 @@ export default {
         imageData.data[start + 3] = 255;
       }
     },
-    getPixel(x, y) {
+    getPixel(x: number, y: number) {
       if (x < 0 || y < 0 || x > imageData.width || y > imageData.height) {
         return [-1, -1, -1, -1];
       }
@@ -386,7 +401,7 @@ export default {
         imageData.data[start + 3]
       ];
     },
-    async startFlood(x, y) {
+    async startFlood(x: number, y: number) {
       const fillColor = color.colorToRGBA(this.selectedColor);
 
       FloodFill.floodfill(
@@ -409,16 +424,14 @@ export default {
       });
       this.redraw();
     },
-    selectColor(c) {
+    selectColor(c: string) {
       this.selectedColor = c;
       this.tool = "pen";
     }
   }
-};
+})
 
-function equalsColor(a, b) {
-  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
-}
+
 </script>
 
 <style>
