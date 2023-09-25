@@ -55,6 +55,8 @@ let vscode: any = null;
 function postMessage(message: any) {
   if (vscode) {
     vscode.postMessage(message);
+  } else {
+    window.parent.postMessage(message, "*");
   }
 }
 
@@ -369,8 +371,6 @@ export default  defineComponent({
       if (y >= this.height) {
         return;
       }
-
-      console.log(x)
 
       const start = (y * this.width + x) * 4;
       if (this.tool === "eraser") {
