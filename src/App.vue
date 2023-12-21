@@ -148,7 +148,7 @@ export default  defineComponent({
       colors: colors,
       strokeWidth: 1,
       tool: "pen",
-      ready: false
+      ready: false      
     };
   },
   computed: {
@@ -167,6 +167,7 @@ export default  defineComponent({
     ctx.imageSmoothingEnabled = false;
     window.addEventListener("message", async e => {
       const { type, body, requestId } = e.data;
+      console.log("message", type, body);
       switch (type) {
         case "init": {
           if (body.untitled) {
@@ -191,14 +192,17 @@ export default  defineComponent({
           }
         }
         case "update": {
-          // let data = body.content
-          //   ? new Uint8Array(body.content.data)
-          //   : undefined;
-          // //get last snapshot
-          // if (body.edits.length > 0) {
-          //   data = body.edits[body.edits.length - 1].snapshot.data;
-          // }
-          // await this.reset(new Uint8Array(data));
+          let data = body.content
+            ? new Uint8Array(body.content.data)
+            : undefined;
+          //get last snapshot
+          if (body.edits.length > 0) {
+            data = body.edits[body.edits.length - 1].snapshot.data;
+          }
+          if(!data){
+            return
+          }
+          await this.reset(new Uint8Array(data));
           return;
         }
         case "getFileData": {
@@ -219,9 +223,9 @@ export default  defineComponent({
 
 
     // mock init message
-    if(!vscode){
-      window.dispatchEvent(new MessageEvent('message', {data: {type: 'init', body: {untitled: true}}}))
-    }
+    // if(!vscode){
+    //   window.dispatchEvent(new MessageEvent('message', {data: {type: 'init', body: {untitled: true}}}))
+    // }
 
   },
   methods: {
