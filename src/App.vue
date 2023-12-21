@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="main">
     <div class="wrapper">
       <canvas class="bg" :style="canvasStyle" ref="canvasBg" width="200" height="200" />
       <canvas
@@ -441,6 +441,33 @@ export default  defineComponent({
 </script>
 
 <style>
+body, html{
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #111;
+}
+
+
+#app{
+  flex: 1;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+.main{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
 canvas {
   position: absolute;
   top: 0;
