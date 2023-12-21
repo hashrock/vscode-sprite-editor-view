@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main" tabindex="0">
     <div class="wrapper">
       <canvas class="bg" :style="canvasStyle" ref="canvasBg" width="200" height="200" />
       <canvas
@@ -44,6 +44,7 @@
         <option value="2">w2</option>
         <option value="3">w3</option>
       </select>
+      <button @click="save">SAVE</button>
     </div>
   </div>
 </template>
@@ -229,6 +230,11 @@ export default  defineComponent({
 
   },
   methods: {
+    save() {
+      postMessage({
+        type: "save",
+      });
+    },
     setupCanvasBg(width: number, height: number) {
       const canvas = this.$refs.canvasBg as HTMLCanvasElement;      
       const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
