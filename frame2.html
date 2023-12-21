@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+      
+      body, html {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+      }
+      iframe {
+        flex: 1;
+        border: none;
+      }
+  
+  </style>
+</head>
+<body>
+
+  <iframe src="http://localhost:5173/" frameborder="0"></iframe>
+  <script>
+    window.addEventListener('message', function(e) {
+      if(e.data.type === 'ready') {
+        const iframeElement = document.querySelector("iframe");
+        iframeElement.contentWindow.postMessage({
+          type: "init",
+          body: {untitled: true},
+        }, '*');
+      }
+      console.log(e.data);
+    }, false);
+  </script>
+</body>
+</html>
